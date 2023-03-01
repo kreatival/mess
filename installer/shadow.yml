@@ -1,0 +1,216 @@
+push:                         # FCM push server configuration
+  queueSize:                                                            # Size of the push pending queue (can be left empty)
+
+awsAttachments:               # private cloud access configuration for attachments
+  uri: "https://localhost:9000"                                         # Minio URL as seen by the Shadow server
+  accessKey: minio_shadow                                               # Minio service access key
+  accessSecret: your_service_password                                   # Minio service secret key configured when installing Minio  
+  bucket: attachments
+  region: us-east-1
+
+cdn:                          # private cloud access configuration for profiles, groups and sticker uploads
+  uri: "https://localhost:9000"                                         # Minio URL as seen by the Shadow server
+  accessKey: minio_shadow                                               # Minio service access key
+  accessSecret: your_service_password                                   # Minio service secret key configured when installing Minio
+  bucket: profiles
+  region: us-east-1
+
+debuglogs:                    # private cloud access configuration for debug logs
+  uri: "https://localhost:9000"                                         # Minio URL as seen by the Shadow server 
+  accessKey: minio_shadow                                               # Minio service access key
+  accessSecret: your_service_password                                   # Minio service secret key configured when installing Minio  
+  bucket: debuglogs
+  region: us-east-1
+
+accountDatabaseCrawler:       # account database crawler configuration
+  chunkSize: 1000
+  chunkIntervalMs:                                                      # can be left empty
+
+metricsCluster:               # Redis server configuration for metrics cluster 
+  urls:
+    - "redis://localhost:6379/"
+
+
+cacheCluster:                 # Redis server configuration for cache cluster
+  urls:
+    - "redis://localhost:6379/"
+
+clientPresenceCluster:                 # Redis server configuration for presence cluster
+  urls:
+    - "redis://localhost:6379/"
+
+directory:                    # Redis server configuration for directory
+  url: "redis://localhost:6379"
+  replicaUrls:
+              - "redis://localhost:6379"                                # dummy (or actual) replication URL(s)
+
+messageCache:                 # Redis server configuration for message store cache
+    persistDelayMinutes:                                                # persistence delay in minutes
+
+    cluster:
+      urls:
+        - "redis://localhost:6379/"                                       # replication URL(s) 
+
+pushSchedulerCluster:                 # Redis server configuration for push scheduler cluster
+  urls:
+    - "redis://localhost:6379/"                                         # fake/unused for now
+
+
+pubsub:                       # Redis server configuration for publisher/subscriber
+     url: "redis://localhost:6379"
+     replicaUrls:
+              - "redis://localhost:6379"                                # dummy (or actual) replication URL(s)
+
+server:
+  applicationConnectors:      # Shadow service configuration
+    - type: https                                                       # connection type
+      port: 8080                                                        # connection port
+      keyStoreType: PKCS12
+      keyStorePath: /home/shadow/shadowserver/shadow.p12                # path to the main keystore 
+      keyStorePassword: your_main_store_password                        # password to access the main keystore configured when generating credentials 
+      validateCerts: true
+      trustStorePath: /usr/lib/jvm/jre-11/lib/security/cacerts          # path to the system truststore
+      trustStorePassword: changeit                                      # password to access the truststore 
+           
+  adminConnectors:            # admin web interface configuration
+    - type: https                                                       # connection type
+      port: 8081                                                        # connection port
+      keyStoreType: PKCS12
+      keyStorePath: /home/shadow/shadowserver/shadow.p12                # path to the main keystore
+      keyStorePassword: your_main_store_password                        # password to access the main keystore configured when generating credentials
+      validateCerts: true
+      trustStorePath: /usr/lib/jvm/jre-11/lib/security/cacerts          # path to the system truststore
+      trustStorePassword: changeit                                      # password to access the truststore
+      needClientAuth: true                                              # uncommenting this effectively disables the web admin access
+              
+messageScyllaDb:              # ScyllaDB database configuration for messages database
+  region: us-east-1
+  tableName:  messagedb
+  endpoint: "http://localhost:8083/"
+  accessKey: shadow                                                     # Scylla service access key
+  accessSecret: your_scylla_service_password                            # Scylla service secret key configured when installing ScyllaDB
+  
+keysScyllaDb:                 # ScyllaDB database configuration for keys database
+  region: us-east-1
+  tableName:  keysdb
+  endpoint: "http://localhost:8083/"
+  accessKey: shadow                                                     # Scylla service access key
+  accessSecret: your_scylla_service_password                            # Scylla service secret key configured when installing ScyllaDB      
+
+groupsScyllaDb:               # ScyllaDB database configuration for groups database
+  region: us-east-1
+  tableName:  groupsdb
+  endpoint: "http://localhost:8083/"
+  accessKey: shadow                                                     # Scylla service access key
+  accessSecret: your_scylla_service_password                            # Scylla service secret key configured when installing ScyllaDB
+  
+groupLogsScyllaDb:            # ScyllaDB database configuration for group logs database
+  region: us-east-1
+  tableName:  grouplogsdb
+  endpoint: "http://localhost:8083/"
+  accessKey: shadow                                                     # Scylla service access key
+  accessSecret: your_scylla_service_password                            # Scylla service secret key configured when installing ScyllaDB  
+
+accountsDatabase:             # Postgres database configuration for accounts database  
+  driverClass: org.postgresql.Driver  
+  user: shadow                                                          # username of the Postgres user
+  password: your_postgres_user_password                                 # password of the Postgres user configured at installation  
+  url: "jdbc:postgresql://localhost:5432/accountdb"                     # URL of the accounts database
+
+abuseDatabase:                # Postgres database configuration for abuse database
+  driverClass: org.postgresql.Driver
+  user: shadow                                                          # username of the Postgres user
+  password: your_postgres_user_password                                 # password of the Postgres user configured at installation
+  url: "jdbc:postgresql://localhost:5432/abusedb"                       # URL of the abuse database
+
+logging:                      # logging configuration
+  level: INFO                 # desired logging level (DEBUG not recommended in production)
+  appenders:
+    - type: file              # configuration to write logs in file
+      currentLogFilename: /var/log/shadow.log                           # location to save the current log file
+      archivedLogFilenamePattern: /var/log/shadow-%d.log.gz             # location and pattern to save archived logs
+      archivedFileCount: 5                                              # number of archived files to keep
+    - type: console           # include this if you want the logs be written to console as well
+
+turn:                         # NAT-T server parameters
+  secret: your_turn_secret                                              # shared secret for the TURN authorization (must match the Coturn configuration)
+  uris:
+   - stun:shadow.example.com:3478                                       # URL of the STUN service (your Coturn server or 3rd party, may add several to the list)
+   - turn:shadow.example.com:3478                                       # URL of the TURN service (your Coturn server or 3rd party)
+
+gcm:  
+  apiKey: GoogleFCMKey                                                  # the server key of your Firebase project     
+
+micrometer:                                                             # Micrometer metrics config, not used currently
+# name: "example"
+  uri: "https://metrics.example.com/"                                   #fake/unused
+# accountId:
+  
+apn:                          # this is not used currently 
+  sandbox: true 
+  keyId: 12345                                                          # fake/unused
+  teamId: 12345                                                         # fake/unused
+  signingKey: 12345                                                     # fake/unused
+  bundleId: 12345                                                       # fake/unused
+
+unidentifiedDelivery:         # unidentified access credentials configuration
+  certificate: xxxxx                                                    # server certificate
+  privateKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=              # server private key 
+  expiresDays: 365                                                      # account certificate validity lifetime in days
+
+recaptcha:
+  secret: 123                                                           # fake/unused
+
+limits:
+  contactQueries:
+   bucketSize: 50000
+   leakRatePerMinute: 50000
+
+zkConfig:
+   serverSecret: xxxx                                                   # server ZK private key   
+   enabled: true                                                        # whether the functionality is enabled
+
+remoteConfig:
+  authorizedTokens:
+    - # leave the list empty    
+  globalConfig: # keys and values that are given to clients on GET /v1/config
+    {} # leave this empty          
+
+paymentsService:
+  userAuthenticationTokenSharedSecret: 6730674e1bd4f3a9cfdb2645159230b1 # fake/unused
+  fixerApiKey: 6730674e1bd4f3a9cfdb2645159230b1                         # fake/unused
+  paymentCurrencies:                                                    # unused for now 
+    - USD
+    - RUB
+
+storageService:
+  userAuthenticationTokenSharedSecret: 6730674e1bd4f3a9cfdb2645159230b1 # fake/unused
+  
+group:                        # group parameters
+  maxGroupSize: 100                                                     # maximum number of users in a group
+  maxGroupTitleLengthBytes: 256                                         # maximum length of group title (in bytes)  
+  maxGroupDescriptionLengthBytes: 1024                                  # maximum length of group description (in bytes)
+  externalServiceSecret: your_group_service_secret_key                  # must be a hex string key
+
+localParametersConfiguration: # locally significant server parameters
+ verificationCodeLifetime: 24                                           # account verification code lifetime in hours
+ keyStorePath: /home/shadow/shadowserver/auxiliary.keystore             # path to the auxiliary keystore 
+ keyStorePassword: your_aux_keystore_password                           # password of the auxiliary keystore configured when generating credentials
+ licensePath: /home/shadow/shadowserver/license                         # path to the folder where activation keys will be stored
+ accountLifetime: 365                                                   # if an account is not seen in this many days it is considered for expiration
+ accountExpirationPolicy: 0                                             # this should be set to 0, 1 or 2. The value of 2 means automatically delete accounts due to expiration, 1 means do not delete but just log, 0 means disable checking for expiration  
+
+serviceConfiguration:         # client-server parameters
+ cloudUri: https://shadow.example.com:9000                              # Minio server URL as accessible from the Internet                             
+ statusUri: shadowuptime.example.com                                    # offline alarm signaling URL
+ storageUri: https://shadow.example.com:8080                            # Shadow server URL as accessible from the Internet
+ unidentifiedDeliveryCaPublicKey: xxxxx                                 # public key of the unidentified access CA 
+ serverZkPublic: xxxxx                                                  # server ZK public key
+ fcmSenderId: 12345                                                     # the sender ID of your Firebase project 
+ certsVersion: 1                                                        # should be 1 if certificate rotation is not used
+ supportEmail: shadow@example.com                                       # email address whither debug reports will be sent
+ # maxImageSize: 100                                                    # (TBA) image attachment size limit (MB)
+ # maxAudioSize: 100                                                    # (TBA) audio attachment size limit (MB)  
+ # maxVideoSize: 100                                                    # (TBA) video attachment size limit (MB)
+ # maxDocSize: 100                                                      # (TBA) document attachment size limit (MB)
+ updatesAllowed: true                                                   # whether clients are allowed to update 
